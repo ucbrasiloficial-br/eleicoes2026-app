@@ -16,15 +16,15 @@ jobs:
         run: |
           unzip -o *.zip
           
-          # Procura a pasta exata onde os arquivos do projeto Gradle foram extraídos
+          # Procura a pasta exata onde os arquivos do projeto Gradle foram extraidos
           GRADLE_FILE=$(find . -mindepth 2 -name "build.gradle*" -o -name "settings.gradle*" | head -n 1)
           
           if [ -n "$GRADLE_FILE" ]; then
             TARGET_DIR=$(dirname "$GRADLE_FILE")
             echo "Projeto encontrado em: $TARGET_DIR"
-            echo "Movendo arquivos para a raiz do repositorio..."
-            shopt -s dotglob
-            mv "$TARGET_DIR"/* .
+            echo "Mesclando arquivos na raiz do repositorio..."
+            cp -r "$TARGET_DIR"/. .
+            rm -rf "$TARGET_DIR"
           fi
 
       - name: Configurar Java 17
