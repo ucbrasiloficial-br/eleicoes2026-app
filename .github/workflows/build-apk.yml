@@ -16,15 +16,14 @@ jobs:
         run: |
           unzip -o *.zip
           
-          # Procura a pasta exata onde os arquivos do projeto Gradle foram extraidos
+          # Localiza a pasta onde os arquivos do projeto Gradle foram extraidos
           GRADLE_FILE=$(find . -mindepth 2 -name "build.gradle*" -o -name "settings.gradle*" | head -n 1)
           
           if [ -n "$GRADLE_FILE" ]; then
             TARGET_DIR=$(dirname "$GRADLE_FILE")
             echo "Projeto encontrado em: $TARGET_DIR"
-            echo "Mesclando arquivos na raiz do repositorio..."
-            cp -rn "$TARGET_DIR"/* . || true
-            cp -rn "$TARGET_DIR"/.* . || true
+            echo "Organizando arquivos na raiz..."
+            cp -rf "$TARGET_DIR"/. .
             rm -rf "$TARGET_DIR"
           fi
 
@@ -34,19 +33,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Instalar Gradle 8.7
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
       - name: Configurar Ambiente Android e Licencas
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Forcar Gradle 8.7 (Compativel com Android)
-        run: |
-          echo "A configurar o Gradle Wrapper na versao 8.7..."
-          gradle wrapper --gradle-version 8.7
-          chmod +x ./gradlew
-
       - name: Compilar APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
