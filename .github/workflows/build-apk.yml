@@ -38,10 +38,14 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Configurar Ambiente Android e Licencas
+      - name: Configurar Ambiente Android e AndroidX
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # Ativa o AndroidX e Jetifier no gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
 
       - name: Compilar APK
         run: gradle assembleDebug --stacktrace
