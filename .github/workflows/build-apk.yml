@@ -23,7 +23,8 @@ jobs:
             TARGET_DIR=$(dirname "$GRADLE_FILE")
             echo "Projeto encontrado em: $TARGET_DIR"
             echo "Mesclando arquivos na raiz do repositorio..."
-            cp -r "$TARGET_DIR"/. .
+            cp -rn "$TARGET_DIR"/* . || true
+            cp -rn "$TARGET_DIR"/.* . || true
             rm -rf "$TARGET_DIR"
           fi
 
@@ -33,20 +34,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Configurar Ambiente Android e Licencas
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Gerar Executavel Gradle Wrapper
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            echo "Criando o wrapper do Gradle..."
+            gradle wrapper
+          fi
+          chmod +x ./gradlew
 
       - name: Compilar APK
-        run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
           name: VotoAoVivo-APK
           path: "**/*.apk"
+          
