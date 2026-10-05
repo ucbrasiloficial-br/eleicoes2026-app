@@ -29,7 +29,6 @@ jobs:
 
       - name: Corrigir recursos ausentes (Modo de Seguranca)
         run: |
-          # Substitui temporariamente icones e temas ausentes pelos padroes do sistema Android
           find . -type f -name "AndroidManifest.xml" -exec sed -i 's/@mipmap\/ic_launcher_round/@android:drawable\/sym_def_app_icon/g' {} +
           find . -type f -name "AndroidManifest.xml" -exec sed -i 's/@mipmap\/ic_launcher/@android:drawable\/sym_def_app_icon/g' {} +
           find . -type f -name "AndroidManifest.xml" -exec sed -i 's/@style\/Theme.VotoAoVivo/@android:style\/Theme.DeviceDefault.Light.NoActionBar/g' {} +
@@ -45,17 +44,19 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Configurar Ambiente Android e AndroidX
+      - name: Configurar Memoria e Ambiente Android
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           
-          # Ativa o AndroidX e Jetifier no gradle.properties
+          # Ativa o AndroidX e expande a memoria RAM para 4GB
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
+          echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> gradle.properties
+          echo "org.gradle.daemon=false" >> gradle.properties
 
       - name: Compilar APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
