@@ -12,9 +12,20 @@ jobs:
       - name: Baixar repositorio
         uses: actions/checkout@v4
 
-      - name: Descompactar Projeto
+      - name: Descompactar e Organizar Estrutura
         run: |
           unzip -o *.zip
+          
+          # Procura a pasta exata onde os arquivos do projeto Gradle foram extraídos
+          GRADLE_FILE=$(find . -mindepth 2 -name "build.gradle*" -o -name "settings.gradle*" | head -n 1)
+          
+          if [ -n "$GRADLE_FILE" ]; then
+            TARGET_DIR=$(dirname "$GRADLE_FILE")
+            echo "Projeto encontrado em: $TARGET_DIR"
+            echo "Movendo arquivos para a raiz do repositorio..."
+            shopt -s dotglob
+            mv "$TARGET_DIR"/* .
+          fi
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -29,9 +40,9 @@ jobs:
         run: |
           if [ -f "./gradlew" ]; then
             chmod +x ./gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --stacktrace
           else
-            gradle assembleDebug
+            gradle assembleDebug --stacktrace
           fi
 
       - name: Disponibilizar APK
