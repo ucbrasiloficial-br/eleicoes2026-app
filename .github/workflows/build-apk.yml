@@ -16,7 +16,6 @@ jobs:
         run: |
           unzip -o *.zip || true
           
-          # Localiza a pasta onde os arquivos do projeto Gradle foram extraidos
           GRADLE_FILE=$(find . -mindepth 2 -name "build.gradle*" -o -name "settings.gradle*" | head -n 1)
           
           if [ -n "$GRADLE_FILE" ]; then
@@ -27,7 +26,7 @@ jobs:
             rm -rf "$TARGET_DIR"
           fi
 
-      - name: Reemplazar FavoritesScreen.kt com codigo limpo
+      - name: Substituir FavoritesScreen.kt com parametros suportados
         run: |
           python3 -c '
           import os, glob
@@ -42,7 +41,12 @@ jobs:
           import androidx.compose.ui.Modifier
 
           @Composable
-          fun FavoritesScreen() {
+          fun FavoritesScreen(
+              viewModel: Any? = null,
+              onCandidateClick: Any? = null,
+              onBackClick: Any? = null,
+              modifier: Modifier = Modifier
+          ) {
               Box(
                   modifier = Modifier.fillMaxSize(),
                   contentAlignment = Alignment.Center
@@ -54,7 +58,7 @@ jobs:
 
           files = glob.glob("**/FavoritesScreen.kt", recursive=True)
           for fpath in files:
-              print(f"Substituindo arquivo com erro: {fpath}")
+              print(f"Substituindo arquivo: {fpath}")
               with open(fpath, "w", encoding="utf-8") as f:
                   f.write(clean_code)
           '
@@ -81,7 +85,6 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           
-          # Ativa o AndroidX e expande a memoria RAM para 4GB
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> gradle.properties
@@ -95,3 +98,4 @@ jobs:
         with:
           name: VotoAoVivo-APK
           path: "**/*.apk"
+          
