@@ -26,7 +26,7 @@ jobs:
             rm -rf "$TARGET_DIR"
           fi
 
-      - name: Substituir FavoritesScreen.kt com parametros suportados
+      - name: Substituir FavoritesScreen.kt com tipos de callback explicitos
         run: |
           python3 -c '
           import os, glob
@@ -43,8 +43,11 @@ jobs:
           @Composable
           fun FavoritesScreen(
               viewModel: Any? = null,
-              onCandidateClick: Any? = null,
-              onBackClick: Any? = null,
+              onCandidateClick: (Any?) -> Unit = {},
+              onCandidateSelected: (Any?) -> Unit = {},
+              onBackClick: () -> Unit = {},
+              onNavigateBack: () -> Unit = {},
+              navController: Any? = null,
               modifier: Modifier = Modifier
           ) {
               Box(
